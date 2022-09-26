@@ -5,7 +5,7 @@ parser.add_argument("--latent_dim", type=int, default=16, help="dimensionality o
 parser.add_argument("--n_epochs", type=int, default=100, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=128, help="size of the batches")
 parser.add_argument("--n_classes", type=int, default=91)
-parser.add_argument("--val_batch_size", type=int, default=5, help="size of the batches")
+parser.add_argument("--val_batch_size", type=int, default=128, help="size of the batches")
 parser.add_argument('--num_workers', type=int, default=2)
 parser.add_argument("--lr", type=float, default=2e-4, help="adam: learning rate")
 parser.add_argument("--beta1", type=float, default=0.5, help="adam: decay of first order momentum of gradient")

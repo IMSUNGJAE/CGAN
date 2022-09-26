@@ -144,38 +144,59 @@ def main():
         generator.eval()
         # 학습할때만 필요한 Dropout,Bathnorm 기능을 비활성화 시킴
         with torch.no_grad():
-            # gradient 계산 context를 비활성화 해주는 역할 -> 비활성화되면 더이상 gradient를 트래킹하지 않음
-            for k, (val_ground_truth, val_nan_value, val_nan_index,val_label) in enumerate(validation_loader):
 
-                val_ground_truth = val_ground_truth.float().cuda()
-                val_nan_value = val_nan_value.float().cuda()
-                val_nan_index = val_nan_index.float().cuda()
+            # #gradient 계산 context를 비활성화 해주는 역할 -> 비활성화되면 더이상 gradient를 트래킹하지 않음
+            # for k, (val_ground_truth, val_nan_value, val_nan_index,val_label) in enumerate(validation_loader):
+            #
+            #     val_ground_truth = val_ground_truth.float().cuda()
+            #     val_nan_value = val_nan_value.float().cuda()
+            #     val_nan_index = val_nan_index.float().cuda()
+            #
+            #     val_real_data = Variable(Tensor(val_ground_truth.reshape(args.val_batch_size,16)))
+            #
+            #
+            #     val_z = Variable(Tensor(val_nan_value.reshape(args.val_batch_size,16)))
+            #     val_label = Variable(val_label.type(LongTensor))
+            #
+            #     val_gen_data = generator(val_z,val_label)
+            #
+            #
+            #     val_loss = validation_loss(val_real_data, val_gen_data)
+            #     valid_loss += val_loss.item()
+            #     """val real data 값이 0인경우 생각을 못함. """
+            #
+            #     real_data_denorm = de_normalized_data(val_real_data)
+            #     gen_data_denorm = de_normalized_data(val_gen_data)
+            #
+            #     ae = abs(real_data_denorm - gen_data_denorm)
+            #
+            #     for i in range(args.val_batch_size):
+            #         for j in val_nan_index[i]:
+            #             MAE = np.append(MAE, ae.cpu()[i][int(j)])
 
-                val_real_data = Variable(Tensor(val_ground_truth.reshape(args.val_batch_size,16)))
+            real = np.array([[-8.227700921,	30.39291462,	178.1083663,	166.2624113,	11.79088097,	18.81073629,	173.0616592,	153.3170075,	17.56060371,	11.8224508,	166.4792563,	151.783595,	3.149534351,	-4.497263869,	140.7145961,	134.1124605 ]])
 
+            nan = np.array([[-8.227700921,	30.39291462,	178.1083663,	166.2624113,	11.79088097,	0,	173.0616592,	153.3170075,	17.56060371,	11.8224508,	166.4792563,	151.783595,	3.149534351,	0,	140.7145961,	134.1124605 ]])
 
-                val_z = Variable(Tensor(val_nan_value.reshape(args.val_batch_size,16)))
-                val_label = Variable(val_label.type(LongTensor))
+            nan = (nan-np.min(all_Data()))/(np.max(all_Data())-np.min(all_Data()))
 
-                val_gen_data = generator(val_z,val_label)
+            real_norm = Variable(torch.FloatTensor(real)).cuda()
 
+            val_z = Variable(Tensor(np.random.normal(0, 1, (1,16))))
+            # val_z = Variable(torch.FloatTensor(nan)).cuda() # 결측 위치 : 1,4,15
+            val_label = Variable(torch.LongTensor(np.arange(12,13))).cuda()
 
-                val_loss = validation_loss(val_real_data, val_gen_data)
-                valid_loss += val_loss.item()
-                """val real data 값이 0인경우 생각을 못함. """
+            val_gen_data = generator(val_z,val_label)
 
-                real_data_denorm = de_normalized_data(val_real_data)
-                gen_data_denorm = de_normalized_data(val_gen_data)
+            generated_Data = de_normalized_data(val_gen_data)
 
-                ae = abs(real_data_denorm - gen_data_denorm)
+            ae = abs(real_norm - generated_Data).sum()
+            print("[MAE %f]" % (ae/16))
+            print('val_gen_Data = ', generated_Data)
 
-                for i in range(args.val_batch_size):
-                    for j in val_nan_index[i]:
-                        MAE = np.append(MAE, ae.cpu()[i][int(j)])
+            # T_MAE = torch.FloatTensor(MAE)
+            # print("[V loss %f] [MAE %f ]" % (valid_loss / len(validation_loader), T_MAE.sum() / (len(validation_loader) * args.batch_size * args.num)))
 
-
-            T_MAE = torch.FloatTensor(MAE)
-            print("[V loss %f] [MAE %f ]" % (valid_loss / len(validation_loader),  T_MAE.sum() / (len(validation_loader) * args.val_batch_size * args.num)))
 
         generator.train()
 

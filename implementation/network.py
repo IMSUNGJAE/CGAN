@@ -18,10 +18,11 @@ class Generator(nn.Module):
             return layers
 
         self.model = nn.Sequential(
-            *block(args.latent_dim + args.n_classes, 128, normalize=False),
+            *block(args.latent_dim + args.n_classes, 64, normalize=False),
             # *block(128, 64),
-            # *block(128, 64),
-            nn.Linear(128, 16),
+             *block(64, 32),
+            nn.Linear(32, 16),
+            nn.Sigmoid(),
 
         )
 
@@ -40,16 +41,16 @@ class Discriminator(nn.Module):
 
         self.model = nn.Sequential(
 
-            nn.Linear(args.n_classes + args.latent_dim, 256),
+            nn.Linear(args.n_classes + args.latent_dim, 128),
             nn.LeakyReLU(0.2,inplace=True),
 
             # nn.Linear(256, 128),  # 기존 512
             # nn.LeakyReLU(0.2,inplace=True),
 
-            # nn.Linear(128, 64),  # 기존 512
-            # nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(128, 64),  # 기존 512
+            nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Linear(256, 1),
+            nn.Linear(64, 1),
             nn.Sigmoid(),
         )
 
